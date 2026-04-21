@@ -24,7 +24,9 @@ export default function FieldDetailPage() {
   });
 
   const fieldPlants = (plants ?? []).filter((p) =>
-    "id" in p.field ? p.field.id === fieldId : false,
+    (typeof p.field === "object" && p.field !== null && "id" in p.field) 
+      ? p.field.id === fieldId 
+      : p.field === fieldId,
   );
 
   return (

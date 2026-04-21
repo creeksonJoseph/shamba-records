@@ -5,6 +5,7 @@ import { ArrowLeft, ClipboardList, Layers, MessageSquarePlus, Sprout } from "luc
 import { toast } from "sonner";
 import { format, addDays, differenceInDays, formatDistanceToNow } from "date-fns";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import type { Plant, Stage } from "@/lib/types";
 import { PageHeader } from "@/components/AppShell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,14 +46,17 @@ export default function PlantDetailPage() {
 }
 
 function PlantDetail({ plant }: { plant: Plant }) {
+  const { user } = useAuth();
   const planted = new Date(plant.planting_date);
   const harvest = addDays(planted, plant.expected_days);
   const daysLeft = differenceInDays(harvest, new Date());
-  const fieldName = "name" in plant.field ? plant.field.name : "";
+  const fieldName = typeof plant.field === "object" && plant.field !== null && "name" in plant.field ? plant.field.name : "";
 
   const updates = [...(plant.updates ?? [])].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
+
+  const canEdit = user?.role === "agent" || user?.role === "admin";
 
   return (
     <>
@@ -60,10 +64,12 @@ function PlantDetail({ plant }: { plant: Plant }) {
         title={plant.crop_type}
         description={fieldName}
         actions={
-          <div className="flex gap-2">
-            <UpdateStageDialog plant={plant} />
-            <AddObservationDialog plantId={plant.id} />
-          </div>
+          canEdit ? (
+            <div className="flex gap-2">
+              <UpdateStageDialog plant={plant} />
+              <AddObservationDialog plantId={plant.id} />
+            </div>
+          ) : undefined
         }
       />
 

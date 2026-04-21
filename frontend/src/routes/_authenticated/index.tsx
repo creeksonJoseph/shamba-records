@@ -216,7 +216,7 @@ export default function DashboardPage() {
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-medium">{p.crop_type}</div>
                       <div className="truncate text-xs text-muted-foreground">
-                        {"name" in p.field ? p.field.name : ""}
+                        {typeof p.field === "object" && p.field !== null && "name" in p.field ? p.field.name : ""}
                       </div>
                     </div>
                     <StageBadge stage={p.stage} className="hidden sm:inline-flex" />

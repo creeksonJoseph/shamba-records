@@ -56,7 +56,7 @@ export default function PlantsPage() {
       if (stage !== "all" && p.stage !== stage) return false;
       if (status !== "all" && p.status !== status) return false;
       if (fieldFilter !== "all") {
-        const fid = "id" in p.field ? p.field.id : "";
+        const fid = typeof p.field === "object" && p.field !== null && "id" in p.field ? p.field.id : p.field;
         if (fid !== fieldFilter) return false;
       }
       return true;
@@ -116,6 +116,8 @@ export default function PlantsPage() {
             const planted = new Date(p.planting_date);
             const expectedHarvest = addDays(planted, p.expected_days);
             const daysLeft = differenceInDays(expectedHarvest, new Date());
+            const fieldObj = typeof p.field === "object" && p.field !== null ? p.field : fields?.find(f => typeof p.field === "string" && f.id === p.field);
+            const fieldName = fieldObj ? fieldObj.name : "Unknown Field";
             return (
               <Link key={p.id} to={`/plants/${p.id}`} className="group">
                 <Card className="h-full transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md">
@@ -126,7 +128,7 @@ export default function PlantsPage() {
                           {p.crop_type}
                         </h3>
                         <div className="text-xs text-muted-foreground">
-                          {"name" in p.field ? p.field.name : ""}
+                          {fieldName}
                         </div>
                       </div>
                       <StatusBadge status={p.status} />
