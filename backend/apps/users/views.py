@@ -9,13 +9,6 @@ from .serializers import UserSerializer, RegisterSerializer, LoginSerializer
 from .permissions import IsAdmin
 
 
-class RegisterView(generics.CreateAPIView):
-    """Public endpoint to create a new user account."""
-    queryset = CustomUser.objects.all()
-    serializer_class = RegisterSerializer
-    permission_classes = [AllowAny]
-
-
 class LoginView(APIView):
     """Return a JWT access+refresh pair for valid credentials."""
     permission_classes = [AllowAny]
@@ -62,7 +55,12 @@ class MeView(generics.RetrieveUpdateAPIView):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    """Admin-only CRUD for all users."""
+    """Admin-only CRUD for all users (Agents/Admins)."""
     queryset = CustomUser.objects.all().order_by('created_at')
-    serializer_class = UserSerializer
     permission_classes = [IsAdmin]
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'partial_update', 'update']:
+            # Use RegisterSerializer so passwords can be set securely
+            return RegisterSerializer
+        return UserSerializer
