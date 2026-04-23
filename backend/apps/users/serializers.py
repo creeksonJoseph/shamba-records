@@ -4,10 +4,20 @@ from .models import CustomUser
 
 
 class UserSerializer(serializers.ModelSerializer):
+    assigned_fields = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomUser
-        fields = ['id', 'name', 'email', 'role', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = ['id', 'name', 'email', 'role', 'created_at', 'assigned_fields']
+        read_only_fields = ['id', 'created_at', 'assigned_fields']
+
+    def get_assigned_fields(self, obj):
+        if obj.role != 'agent':
+            return []
+        return [
+            {'id': str(f.id), 'name': f.name}
+            for f in obj.assigned_fields.all()
+        ]
 
 
 class RegisterSerializer(serializers.ModelSerializer):

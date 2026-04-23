@@ -56,7 +56,7 @@ class MeView(generics.RetrieveUpdateAPIView):
 
 class UserViewSet(viewsets.ModelViewSet):
     """Admin-only CRUD for all users (Agents/Admins)."""
-    queryset = CustomUser.objects.all().order_by('created_at')
+    queryset = CustomUser.objects.prefetch_related('assigned_fields').all().order_by('created_at')
     permission_classes = [IsAdmin]
 
     def get_serializer_class(self):

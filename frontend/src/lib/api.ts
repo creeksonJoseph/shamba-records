@@ -14,6 +14,7 @@ export interface AuthUser {
   name: string;
   email: string;
   role: Role;
+  assigned_fields?: { id: string; name: string }[];
 }
 
 export const tokenStore = {
