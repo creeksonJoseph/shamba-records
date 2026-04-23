@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { useDashboard } from "@/api/hooks/useDashboard";
@@ -129,6 +130,23 @@ export default function DashboardPage() {
   const isAdmin = user?.role === "admin";
   const { data, isLoading, error } = useDashboard();
 
+  const [showStats, setShowStats] = useState(false);
+  const [showCharts, setShowCharts] = useState(false);
+  const [showLists, setShowLists] = useState(false);
+
+  useEffect(() => {
+    if (data && !isLoading) {
+      setShowStats(true);
+      const t1 = setTimeout(() => setShowCharts(true), 150);
+      const t2 = setTimeout(() => setShowLists(true), 300);
+      return () => { clearTimeout(t1); clearTimeout(t2); };
+    } else {
+      setShowStats(false);
+      setShowCharts(false);
+      setShowLists(false);
+    }
+  }, [data, isLoading]);
+
   return (
     <>
       <PageHeader
@@ -144,7 +162,7 @@ export default function DashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
-        {isLoading || !data ? (
+        {!showStats || !data ? (
           Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-[88px] rounded-xl" />)
         ) : (
           <>
@@ -169,7 +187,7 @@ export default function DashboardPage() {
             <CardTitle className="font-display text-xl">By status</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading || !data ? (
+            {!showCharts || !data ? (
               <Skeleton className="h-32 w-full" />
             ) : (
               <StatusDonut data={data.by_status} />
@@ -181,7 +199,7 @@ export default function DashboardPage() {
             <CardTitle className="font-display text-xl">By stage</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading || !data ? (
+            {!showCharts || !data ? (
               <Skeleton className="h-32 w-full" />
             ) : (
               <StageBar data={data.by_stage} />
@@ -199,7 +217,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading || !data ? (
+            {!showLists || !data ? (
               <Skeleton className="h-40 w-full" />
             ) : data.at_risk_plants.length === 0 ? (
               <EmptyState icon={CheckCircle2} text="Nothing at risk — great job!" />
@@ -236,7 +254,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading || !data ? (
+            {!showLists || !data ? (
               <Skeleton className="h-40 w-full" />
             ) : data.recent_updates.length === 0 ? (
               <EmptyState icon={ClipboardList} text="No updates yet." />

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Plus, Search, Sprout } from "lucide-react";
 import { format, differenceInDays, addDays } from "date-fns";
 import type { Field, Plant, Stage, Status } from "@/lib/types";
@@ -56,6 +56,28 @@ export default function PlantsPage() {
     });
   }, [plants, q, stage, status, fieldFilter]);
 
+  const [visibleLimit, setVisibleLimit] = useState(12);
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setVisibleLimit(12);
+  }, [q, stage, status, fieldFilter]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleLimit((prev) => prev + 12);
+        }
+      },
+      { threshold: 0.1, rootMargin: "200px" }
+    );
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+    return () => observer.disconnect();
+  }, [filtered.length]);
+
   return (
     <>
       <PageHeader
@@ -109,7 +131,7 @@ export default function PlantsPage() {
         </Card>
       ) : (
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((p) => {
+          {filtered.slice(0, visibleLimit).map((p) => {
             const planted = new Date(p.planting_date);
             const expectedHarvest = addDays(planted, p.expected_days);
             const daysLeft = differenceInDays(expectedHarvest, new Date());
@@ -144,6 +166,13 @@ export default function PlantsPage() {
               </Link>
             );
           })}
+        </div>
+      )}
+
+      {/* Intersection observer target for infinite scrolling */}
+      {!isLoading && visibleLimit < filtered.length && (
+        <div ref={observerTarget} className="mt-8 flex justify-center py-4">
+          <Skeleton className="h-8 w-8 rounded-full animate-spin" style={{ animationDuration: '3s' }} />
         </div>
       )}
     </>

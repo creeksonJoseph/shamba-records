@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Mail, Shield, User as UserIcon, Trash2, ChevronDown, ChevronRight, MapPinned } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -18,6 +18,24 @@ export default function UsersPage() {
 
   const toggleExpand = (id: string) =>
     setExpandedId((prev) => (prev === id ? null : id));
+
+  const [visibleLimit, setVisibleLimit] = useState(12);
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleLimit((prev) => prev + 12);
+        }
+      },
+      { threshold: 0.1, rootMargin: "200px" }
+    );
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+    return () => observer.disconnect();
+  }, [users?.length]);
 
   return (
     <>
@@ -51,7 +69,7 @@ export default function UsersPage() {
           </CardContent>
         ) : (
           <div className="divide-y divide-border">
-            {users.map((u) => {
+            {users.slice(0, visibleLimit).map((u) => {
               const isExpanded = expandedId === u.id;
               const isAgent = u.role === "agent";
               const fieldCount = u.assigned_fields?.length ?? 0;
@@ -183,6 +201,13 @@ export default function UsersPage() {
           </div>
         )}
       </Card>
+
+      {/* Intersection observer target for infinite scrolling */}
+      {!isLoading && users && visibleLimit < users.length && (
+        <div ref={observerTarget} className="mt-8 flex justify-center py-4">
+          <Skeleton className="h-8 w-8 rounded-full animate-spin" style={{ animationDuration: '3s' }} />
+        </div>
+      )}
     </>
   );
 }
