@@ -1,7 +1,7 @@
 // Centralized API client with JWT injection + refresh-on-401.
 
 
-export const API_BASE = "http://127.0.0.1:8000/api";
+export const API_BASE = "https://shamba-records-rkb7.onrender.com/api";
 
 const ACCESS_KEY = "farm.access";
 const REFRESH_KEY = "farm.refresh";
