@@ -29,7 +29,7 @@ export default function UsersPage() {
 
       <Card>
         {/* Table header */}
-        <div className="grid grid-cols-[1fr_1fr_100px_120px_48px] items-center gap-4 border-b border-border px-4 py-2 text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="hidden md:grid md:grid-cols-[1fr_1fr_100px_120px_48px] items-center gap-4 border-b border-border px-4 py-2 text-xs uppercase tracking-wider text-muted-foreground">
           <span>Name</span>
           <span>Email</span>
           <span>Role</span>
@@ -60,15 +60,15 @@ export default function UsersPage() {
                 <div key={u.id}>
                   {/* Main row */}
                   <div
-                    className={`grid grid-cols-[1fr_1fr_100px_120px_48px] items-center gap-4 px-4 py-3 transition-colors ${
+                    className={`flex items-center justify-between md:grid md:grid-cols-[1fr_1fr_100px_120px_48px] gap-2 md:gap-4 px-4 py-3 transition-colors ${
                       isAgent ? "cursor-pointer hover:bg-muted/40" : ""
                     } ${isExpanded ? "bg-muted/30" : ""}`}
                     onClick={() => isAgent && toggleExpand(u.id)}
                   >
-                    {/* Name */}
-                    <div className="flex items-center gap-2 min-w-0">
+                    {/* Name & Mobile Context */}
+                    <div className="flex items-center gap-3 min-w-0 overflow-hidden">
                       <div
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs ${
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs ${
                           u.role === "admin"
                             ? "bg-accent/20 text-accent"
                             : "bg-soil/15 text-soil"
@@ -80,22 +80,34 @@ export default function UsersPage() {
                           <UserIcon className="h-4 w-4" />
                         )}
                       </div>
-                      <span className="truncate font-medium text-sm">{u.name}</span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="truncate font-medium text-sm">{u.name}</span>
+                        {/* Mobile summary layer: below name on small screens, hidden on md */}
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground md:hidden mt-0.5">
+                           <span className="capitalize border border-border px-1.5 py-0.5 rounded text-[10px]">{u.role}</span>
+                           {isAgent && (
+                             <span className="flex items-center gap-0.5 shrink-0">
+                               <MapPinned className="h-3 w-3" /> {fieldCount}
+                             </span>
+                           )}
+                           <span className="truncate">{u.email}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Email */}
-                    <div className="flex items-center gap-1 min-w-0 text-sm text-muted-foreground">
+                    {/* Desktop Email */}
+                    <div className="hidden md:flex items-center gap-1 min-w-0 text-sm text-muted-foreground">
                       <Mail className="h-3 w-3 shrink-0" />
                       <span className="truncate">{u.email}</span>
                     </div>
 
-                    {/* Role */}
-                    <Badge variant="outline" className="capitalize w-fit">
+                    {/* Desktop Role */}
+                    <Badge variant="outline" className="hidden md:inline-flex capitalize w-fit">
                       {u.role}
                     </Badge>
 
-                    {/* Assigned fields */}
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    {/* Desktop Assigned fields */}
+                    <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground">
                       {isAgent ? (
                         <>
                           <MapPinned className="h-3.5 w-3.5 shrink-0" />
@@ -104,19 +116,24 @@ export default function UsersPage() {
                               ? "No fields"
                               : `${fieldCount} field${fieldCount !== 1 ? "s" : ""}`}
                           </span>
-                          {isAgent && (
-                            isExpanded
-                              ? <ChevronDown className="h-3.5 w-3.5 ml-auto" />
-                              : <ChevronRight className="h-3.5 w-3.5 ml-auto" />
-                          )}
+                          {isExpanded
+                            ? <ChevronDown className="h-3.5 w-3.5 ml-auto shrink-0" />
+                            : <ChevronRight className="h-3.5 w-3.5 ml-auto shrink-0" />}
                         </>
                       ) : (
                         <span className="text-muted-foreground/40">—</span>
                       )}
                     </div>
 
-                    {/* Delete */}
-                    <div className="flex justify-end">
+                    {/* Actions and mobile expand indicator */}
+                    <div className="flex items-center justify-end gap-1 shrink-0 ml-auto md:ml-0">
+                      {/* Show chevron on mobile for agents */}
+                      {isAgent && (
+                         <div className="flex md:hidden items-center justify-center h-8 w-8 text-muted-foreground">
+                           {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                         </div>
+                      )}
+
                       {u.id !== currentUser?.id && (
                         <Button
                           variant="ghost"

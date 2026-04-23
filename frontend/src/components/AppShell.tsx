@@ -42,7 +42,7 @@ export function AppShell() {
 
   const handleLogout = () => {
     logout();
-    navigate({ to: "/login" });
+    navigate("/login");
   };
 
   const isActive = (to: string) =>
@@ -63,7 +63,7 @@ export function AppShell() {
               <Sprout className="h-4 w-4" />
             </div>
             <div className={cn("leading-tight transition-all duration-300", isExpanded ? "opacity-100 ml-1" : "opacity-0 invisible w-0 ml-0")}>
-              <div className="font-display text-xl">Farmstead</div>
+              <div className="font-display text-xl">Smart Season</div>
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">
                 Farm records
               </div>
@@ -133,7 +133,7 @@ export function AppShell() {
                   <Sprout className="h-5 w-5" />
                 </div>
                 <div className="leading-tight">
-                  <div className="font-display text-xl">Farmstead</div>
+                  <div className="font-display text-xl">Smart Season</div>
                 </div>
               </Link>
             </div>
@@ -158,7 +158,7 @@ export function AppShell() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">{user?.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate({ to: "/profile" })}>
+                <DropdownMenuItem onClick={() => navigate("/profile")}>
                   <User className="mr-2 h-4 w-4" /> Profile
                 </DropdownMenuItem>
               </DropdownMenuContent>

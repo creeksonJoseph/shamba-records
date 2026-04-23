@@ -64,32 +64,36 @@ export default function PlantsPage() {
         actions={<NewPlantDialog fields={fields ?? []} />}
       />
 
-      <div className="mb-5 grid gap-2 md:grid-cols-[1fr_repeat(3,minmax(140px,180px))]">
+      <div className="mb-5 flex flex-col gap-2 md:grid md:grid-cols-[1fr_repeat(3,minmax(140px,180px))]">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search crops..." className="pl-9" />
         </div>
-        <Select value={stage} onValueChange={setStage}>
-          <SelectTrigger><SelectValue placeholder="Stage" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All stages</SelectItem>
-            {STAGES.map((s) => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {STATUSES.map((s) => <SelectItem key={s} value={s} className="capitalize">{s.replace("_", " ")}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={fieldFilter} onValueChange={setFieldFilter}>
-          <SelectTrigger><SelectValue placeholder="Field" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All fields</SelectItem>
-            {(fields ?? []).map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:contents">
+          <Select value={stage} onValueChange={setStage}>
+            <SelectTrigger><SelectValue placeholder="Stage" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All stages</SelectItem>
+              {STAGES.map((s) => <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              {STATUSES.map((s) => <SelectItem key={s} value={s} className="capitalize">{s.replace("_", " ")}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <div className="col-span-2 sm:col-span-1 md:contents">
+            <Select value={fieldFilter} onValueChange={setFieldFilter}>
+              <SelectTrigger><SelectValue placeholder="Field" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All fields</SelectItem>
+                {(fields ?? []).map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {isLoading ? (

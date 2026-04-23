@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/AppShell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { StageBadge, StatusBadge } from "@/components/StatusBadge";
 
 export default function PlantDetailPage() {
   const { plantId } = useParams<{ plantId: string }>();
