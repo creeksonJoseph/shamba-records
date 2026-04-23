@@ -8,6 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { NewUserDialog } from "@/components/users/NewUserDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useUsers, useDeleteUser } from "@/api/hooks/useUsers";
 
 export default function UsersPage() {
@@ -153,20 +164,37 @@ export default function UsersPage() {
                       )}
 
                       {u.id !== currentUser?.id && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                          disabled={deleteMutation.isPending}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (confirm(`Remove ${u.name}?`)) {
-                              deleteMutation.mutate(u.id);
-                            }
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                disabled={deleteMutation.isPending}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently remove {u.name} from the system and completely revoke their access.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  onClick={() => deleteMutation.mutate(u.id)}
+                                >
+                                  Remove User
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       )}
                     </div>
                   </div>

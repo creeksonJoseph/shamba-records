@@ -173,12 +173,12 @@ export function AppShell() {
 
       {/* Mobile bottom tab bar */}
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur md:hidden">
-        <ul className="mx-auto grid max-w-md grid-cols-4">
+        <ul className="mx-auto flex max-w-md w-full">
           {items.map((item) => {
             const active = isActive(item.to);
             const Icon = item.icon;
             return (
-              <li key={item.to}>
+              <li key={item.to} className="flex-1">
                 <Link
                   to={item.to}
                   className={cn(
