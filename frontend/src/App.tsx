@@ -1,13 +1,13 @@
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { AppShell } from '@/components/AppShell'
-import LoginPage from '@/routes/login'
-import IndexPage from '@/routes/_authenticated/index'
-import ProfilePage from '@/routes/_authenticated/profile'
-import UsersPage from '@/routes/_authenticated/_admin/users'
-import FieldsIndexPage from '@/routes/_authenticated/fields/index'
-import FieldDetailPage from '@/routes/_authenticated/fields/$fieldId'
-import PlantsIndexPage from '@/routes/_authenticated/plants/index'
-import PlantDetailPage from '@/routes/_authenticated/plants/$plantId'
+import LoginPage from '@/pages/Login'
+import Dashboard from '@/pages/Dashboard'
+import ProfilePage from '@/pages/Profile'
+import UsersPage from '@/pages/admin/Users'
+import FieldsList from '@/pages/fields/FieldsList'
+import FieldDetail from '@/pages/fields/FieldDetail'
+import PlantsList from '@/pages/plants/PlantsList'
+import PlantDetail from '@/pages/plants/PlantDetail'
 import { tokenStore } from '@/lib/api'
 
 const AuthGuard = () => {
@@ -30,17 +30,17 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<AuthGuard />}>
-        <Route path="/" element={<IndexPage />} />
+        <Route path="/" element={<Dashboard />} />
         <Route path="/profile" element={<ProfilePage />} />
         
         <Route element={<AdminGuard />}>
           <Route path="/users" element={<UsersPage />} />
         </Route>
 
-        <Route path="/fields" element={<FieldsIndexPage />} />
-        <Route path="/fields/:fieldId" element={<FieldDetailPage />} />
-        <Route path="/plants" element={<PlantsIndexPage />} />
-        <Route path="/plants/:plantId" element={<PlantDetailPage />} />
+        <Route path="/fields" element={<FieldsList />} />
+        <Route path="/fields/:fieldId" element={<FieldDetail />} />
+        <Route path="/plants" element={<PlantsList />} />
+        <Route path="/plants/:plantId" element={<PlantDetail />} />
       </Route>
     </Routes>
   )

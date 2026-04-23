@@ -1,8 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import type { DashboardData } from "@/lib/types";
+import { useDashboard } from "@/api/hooks/useDashboard";
 import { PageHeader } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +17,7 @@ import {
   MessageSquarePlus,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import type React from "react";
 
 function StatCard({
   label,
@@ -128,10 +127,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["dashboard"],
-    queryFn: () => api<DashboardData>("/dashboard/"),
-  });
+  const { data, isLoading, error } = useDashboard();
 
   return (
     <>

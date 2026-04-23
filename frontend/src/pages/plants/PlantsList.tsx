@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Plus, Search, Sprout } from "lucide-react";
-import { toast } from "sonner";
 import { format, differenceInDays, addDays } from "date-fns";
-import { api } from "@/lib/api";
 import type { Field, Plant, Stage, Status } from "@/lib/types";
+import { usePlants } from "@/api/hooks/usePlants";
+import { useFields } from "@/api/hooks/useFields";
+import { NewPlantDialog } from "@/components/plants/NewPlantDialog";
 import { PageHeader } from "@/components/AppShell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,15 +39,8 @@ export default function PlantsPage() {
   const [status, setStatus] = useState<string>("all");
   const [fieldFilter, setFieldFilter] = useState<string>("all");
 
-  const { data: plants, isLoading } = useQuery({
-    queryKey: ["plants"],
-    queryFn: () => api<Plant[]>("/plants/"),
-  });
-
-  const { data: fields } = useQuery({
-    queryKey: ["fields"],
-    queryFn: () => api<Field[]>("/fields/"),
-  });
+  const { data: plants, isLoading } = usePlants();
+  const { data: fields } = useFields();
 
   const filtered = useMemo(() => {
     if (!plants) return [];
@@ -153,83 +146,4 @@ export default function PlantsPage() {
   );
 }
 
-function NewPlantDialog({ fields }: { fields: Field[] }) {
-  const qc = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [fieldId, setFieldId] = useState("");
-  const [cropType, setCropType] = useState("");
-  const [plantingDate, setPlantingDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [expectedDays, setExpectedDays] = useState(90);
-  const [notes, setNotes] = useState("");
 
-  const mutation = useMutation({
-    mutationFn: () =>
-      api<Plant>("/plants/", {
-        method: "POST",
-        body: {
-          field: fieldId,
-          crop_type: cropType,
-          planting_date: plantingDate,
-          expected_days: expectedDays,
-          notes: notes || undefined,
-        },
-      }),
-    onSuccess: () => {
-      toast.success("Plant added");
-      qc.invalidateQueries({ queryKey: ["plants"] });
-      qc.invalidateQueries({ queryKey: ["dashboard"] });
-      setOpen(false);
-      setFieldId(""); setCropType(""); setNotes(""); setExpectedDays(90);
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button><Plus className="mr-1 h-4 w-4" /> New plant</Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="font-display text-2xl">New plant</DialogTitle>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}
-          className="space-y-4"
-        >
-          <div className="space-y-2">
-            <Label>Field</Label>
-            <Select value={fieldId} onValueChange={setFieldId} required>
-              <SelectTrigger><SelectValue placeholder="Choose a field" /></SelectTrigger>
-              <SelectContent>
-                {fields.map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="crop">Crop type</Label>
-            <Input id="crop" required value={cropType} onChange={(e) => setCropType(e.target.value)} placeholder="e.g. Maize" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="pdate">Planting date</Label>
-              <Input id="pdate" type="date" required value={plantingDate} onChange={(e) => setPlantingDate(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="days">Expected days</Label>
-              <Input id="days" type="number" min={1} required value={expectedDays} onChange={(e) => setExpectedDays(parseInt(e.target.value) || 0)} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Optional notes..." />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={mutation.isPending || !fieldId}>Create plant</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}

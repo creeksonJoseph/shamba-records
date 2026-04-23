@@ -1,8 +1,8 @@
 import { Link, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MapPin, Sprout, User as UserIcon } from "lucide-react";
-import { api } from "@/lib/api";
-import type { Field, Plant } from "@/lib/types";
+import type { Plant } from "@/lib/types";
+import { useField } from "@/api/hooks/useFields";
+import { usePlants } from "@/api/hooks/usePlants";
 import { PageHeader } from "@/components/AppShell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,15 +13,8 @@ import { format } from "date-fns";
 export default function FieldDetailPage() {
   const { fieldId } = useParams<{ fieldId: string }>();
 
-  const { data: field, isLoading } = useQuery({
-    queryKey: ["field", fieldId],
-    queryFn: () => api<Field>(`/fields/${fieldId}/`),
-  });
-
-  const { data: plants } = useQuery({
-    queryKey: ["plants"],
-    queryFn: () => api<Plant[]>("/plants/"),
-  });
+  const { data: field, isLoading } = useField(fieldId!);
+  const { data: plants } = usePlants();
 
   const fieldPlants = (plants ?? []).filter((p) =>
     (typeof p.field === "object" && p.field !== null && "id" in p.field) 
