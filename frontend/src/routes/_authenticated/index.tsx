@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import type { DashboardData } from "@/lib/types";
 import { PageHeader } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,8 @@ import {
   CheckCircle2,
   Activity,
   ClipboardList,
+  Layers,
+  MessageSquarePlus,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -123,6 +126,8 @@ function StatusDonut({ data }: { data: Record<string, number> }) {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const { data, isLoading, error } = useQuery({
     queryKey: ["dashboard"],
     queryFn: () => api<DashboardData>("/dashboard/"),
@@ -132,7 +137,7 @@ export default function DashboardPage() {
     <>
       <PageHeader
         title="Dashboard"
-        description="A snapshot of your fields, crops and activity."
+        description={`A snapshot of ${isAdmin ? "all" : "your"} fields, crops and activity.`}
       />
 
       {error && (
@@ -240,38 +245,69 @@ export default function DashboardPage() {
             ) : data.recent_updates.length === 0 ? (
               <EmptyState icon={ClipboardList} text="No updates yet." />
             ) : (
-              <ul className="space-y-4">
+              <ul className="divide-y divide-border">
                 {data.recent_updates.map((u) => (
-                  <li key={u.id} className="flex gap-3">
-                    <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  <li key={u.id} className="flex gap-3 py-3">
+                    <div
+                      className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                        u.new_stage
+                          ? "bg-primary-soft text-primary"
+                          : "bg-soil/15 text-soil"
+                      }`}
+                    >
+                      {u.new_stage ? (
+                        <Layers className="h-4 w-4" />
+                      ) : (
+                        <MessageSquarePlus className="h-4 w-4" />
+                      )}
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {u.plant && (
-                          <Link
-                            to={`/plants/${u.plant.id}`}
-                            className="font-medium text-foreground hover:underline"
-                          >
-                            {u.plant.crop_type}
-                          </Link>
-                        )}
-                        <span>·</span>
-                        <span>{formatDistanceToNow(new Date(u.created_at), { addSuffix: true })}</span>
-                      </div>
-                      <div className="mt-0.5 text-sm">
+                      {/* Action sentence — full context for both roles */}
+                      <div className="text-sm font-medium">
                         {u.new_stage ? (
                           <span>
-                            Stage changed to <span className="font-medium">{u.new_stage}</span>
-                            {u.observation ? ` — ${u.observation}` : ""}
+                            <Link
+                              to={u.plant ? `/plants/${u.plant.id}` : "#"}
+                              className="hover:underline"
+                            >
+                              {u.plant?.crop_type ?? "Plant"}
+                            </Link>
+                            {u.plant?.field_name && (
+                              <span className="font-normal text-muted-foreground"> in {u.plant.field_name}</span>
+                            )}
+                            <span className="font-normal text-muted-foreground"> changed to </span>
+                            <span className="capitalize">{u.new_stage}</span>
                           </span>
                         ) : (
-                          u.observation
+                          <span>
+                            <Link
+                              to={u.plant ? `/plants/${u.plant.id}` : "#"}
+                              className="hover:underline"
+                            >
+                              {u.plant?.crop_type ?? "Plant"}
+                            </Link>
+                            {u.plant?.field_name && (
+                              <span className="font-normal text-muted-foreground"> in {u.plant.field_name}</span>
+                            )}
+                          </span>
                         )}
                       </div>
+                      {/* Observation note if present */}
+                      {u.observation && (
+                        <div className="mt-0.5 text-sm text-muted-foreground">{u.observation}</div>
+                      )}
+                      {/* Third line: by agent (admin only) · time */}
+                      <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                        {isAdmin && u.agent && (
+                          <>
+                            <span>by <span className="font-medium text-foreground">{u.agent.name}</span></span>
+                            <span>·</span>
+                          </>
+                        )}
+                        <span>{formatDistanceToNow(new Date(u.created_at), { addSuffix: true })}</span>
+                      </div>
                     </div>
-                    {u.new_stage && <StageBadge stage={u.new_stage} className="self-start" />}
-                    {!u.new_stage && (
-                      <StatusBadge status="active" className="self-start opacity-0" />
-                    )}
+                    {u.new_stage && <StageBadge stage={u.new_stage} className="self-start mt-0.5" />}
                   </li>
                 ))}
               </ul>

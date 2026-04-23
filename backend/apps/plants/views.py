@@ -17,8 +17,7 @@ class PlantViewSet(viewsets.ModelViewSet):
     Admin: sees all plants.
     Agent: sees plants on their assigned fields only.
     Create: agents only (on their assigned fields).
-    Stage updates: via the custom /stage/ action.
-    Observations: via the /updates/ action.
+    Stage updates & observations: agents only, via /stage/ and /updates/ actions.
     """
 
     def get_queryset(self):
@@ -36,18 +35,26 @@ class PlantViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         return [permissions.IsAuthenticated()]
 
-    def _check_agent_ownership(self, request, plant):
-        """Return 403 Response if agent doesn't own this plant's field."""
-        if request.user.role == 'agent' and plant.field.assigned_agent != request.user:
-            return Response({'detail': 'Not authorized.'}, status=status.HTTP_403_FORBIDDEN)
+    def _check_agent_only(self, request, plant):
+        """Return 403 Response if the caller is not an agent assigned to this plant's field."""
+        if request.user.role != 'agent':
+            return Response(
+                {'detail': 'Only field agents can perform this action.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if plant.field.assigned_agent != request.user:
+            return Response(
+                {'detail': 'You are not assigned to this field.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         return None
 
     @action(detail=True, methods=['patch'], url_path='stage')
     def update_stage(self, request, pk=None):
-        """PATCH /api/plants/:id/stage/ — advance stage and append to audit log."""
+        """PATCH /api/plants/:id/stage/ — agents only: advance stage and append to audit log."""
         plant = self.get_object()
 
-        denied = self._check_agent_ownership(request, plant)
+        denied = self._check_agent_only(request, plant)
         if denied:
             return denied
 
@@ -81,8 +88,8 @@ class PlantViewSet(viewsets.ModelViewSet):
             updates = plant.updates.select_related('agent').all()
             return Response(PlantUpdateSerializer(updates, many=True).data)
 
-        # POST
-        denied = self._check_agent_ownership(request, plant)
+        # POST — agents only
+        denied = self._check_agent_only(request, plant)
         if denied:
             return denied
 

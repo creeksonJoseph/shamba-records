@@ -3,8 +3,21 @@ from apps.users.serializers import UserSerializer
 from .models import Plant, PlantUpdate, STAGE_CHOICES
 
 
+class PlantSummarySerializer(serializers.ModelSerializer):
+    """Lightweight plant info embedded inside update entries."""
+    field_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Plant
+        fields = ['id', 'crop_type', 'field_name']
+
+    def get_field_name(self, obj):
+        return obj.field.name if obj.field else None
+
+
 class PlantUpdateSerializer(serializers.ModelSerializer):
     agent = UserSerializer(read_only=True)
+    plant = PlantSummarySerializer(read_only=True)
 
     class Meta:
         model = PlantUpdate

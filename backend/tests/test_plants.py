@@ -95,7 +95,7 @@ class TestPlantAPI:
     def test_admin_sees_all_plants(self, admin_client, plant):
         res = admin_client.get('/api/plants/')
         assert res.status_code == 200
-        ids = [p['id'] for p in res.data['results']]
+        ids = [p['id'] for p in res.data]
         assert str(plant.id) in ids
 
     def test_agent_can_post_observation(self, agent_client, plant):

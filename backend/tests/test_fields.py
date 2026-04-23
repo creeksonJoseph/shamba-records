@@ -30,7 +30,7 @@ class TestFields:
     def test_admin_sees_all_fields(self, admin_client, field):
         res = admin_client.get('/api/fields/')
         assert res.status_code == 200
-        ids = [f['id'] for f in res.data['results']]
+        ids = [f['id'] for f in res.data]
         assert str(field.id) in ids
 
     def test_agent_sees_only_their_assigned_field(self, admin_client, agent_client, agent_user, admin_user, db):
@@ -44,7 +44,7 @@ class TestFields:
 
         res = agent_client.get('/api/fields/')
         assert res.status_code == 200
-        ids = [f['id'] for f in res.data['results']]
+        ids = [f['id'] for f in res.data]
         assert str(field_mine.id) in ids
         assert len(ids) == 1
 

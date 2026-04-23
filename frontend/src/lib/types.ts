@@ -18,6 +18,7 @@ export interface PlantUpdate {
   new_stage?: Stage | null;
   created_at: string;
   created_by?: AuthUser | null;
+  agent?: AuthUser | null;
 }
 
 export interface Plant {
@@ -39,5 +40,5 @@ export interface DashboardData {
   by_status: Record<Status, number>;
   by_stage: Record<Stage, number>;
   at_risk_plants: Plant[];
-  recent_updates: (PlantUpdate & { plant?: { id: string; crop_type: string } })[];
+  recent_updates: (PlantUpdate & { plant?: { id: string; crop_type: string; field_name?: string | null } })[];
 }

@@ -3,9 +3,9 @@ import pytest
 
 @pytest.mark.django_db
 class TestAuth:
-    def test_register_creates_user(self, api_client):
-        res = api_client.post('/api/auth/register/', {
-            'name': 'New User',
+    def test_admin_can_create_user(self, admin_client):
+        res = admin_client.post('/api/users/', {
+            'name': 'New Agent',
             'email': 'new@test.com',
             'password': 'testpass123',
             'role': 'agent',

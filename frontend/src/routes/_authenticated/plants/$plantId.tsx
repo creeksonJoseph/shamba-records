@@ -56,7 +56,7 @@ function PlantDetail({ plant }: { plant: Plant }) {
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
 
-  const canEdit = user?.role === "agent" || user?.role === "admin";
+  const canEdit = user?.role === "agent";
 
   return (
     <>

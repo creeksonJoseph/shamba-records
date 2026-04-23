@@ -45,7 +45,7 @@ class DashboardView(APIView):
         recent_updates = (
             PlantUpdate.objects
             .filter(plant__in=plants)
-            .select_related('plant', 'agent')
+            .select_related('plant', 'plant__field', 'agent')
             .order_by('-created_at')[:5]
         )
 
