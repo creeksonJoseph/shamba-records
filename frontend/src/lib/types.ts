@@ -29,6 +29,7 @@ export interface Plant {
   expected_days: number;
   notes?: string | null;
   stage: Stage;
+  status_override?: "at_risk" | "healthy" | null;
   status: Status;
   updates?: PlantUpdate[];
   created_at?: string;

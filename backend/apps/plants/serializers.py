@@ -34,7 +34,7 @@ class PlantSerializer(serializers.ModelSerializer):
         model = Plant
         fields = [
             'id', 'field', 'created_by', 'crop_type', 'planting_date',
-            'expected_days', 'stage', 'status', 'notes',
+            'expected_days', 'stage', 'status_override', 'status', 'notes',
             'created_at', 'updated_at', 'updates',
         ]
         read_only_fields = ['id', 'status', 'created_by', 'created_at', 'updated_at']
@@ -65,6 +65,20 @@ class StageUpdateSerializer(serializers.Serializer):
     """Accepts a stage transition with an optional observation note."""
     new_stage = serializers.ChoiceField(choices=STAGE_CHOICES)
     observation = serializers.CharField(required=False, allow_blank=True, default='')
+
+
+class FlagSerializer(serializers.Serializer):
+    """
+    PATCH /api/plants/:id/flag/
+    override: 'at_risk' | 'healthy' | null (clears override, back to auto)
+    reason:   optional note logged as an observation.
+    """
+    override = serializers.ChoiceField(
+        choices=['at_risk', 'healthy'],
+        allow_null=True,
+        required=True,
+    )
+    reason = serializers.CharField(required=False, allow_blank=True, default='')
 
 
 class ObservationSerializer(serializers.Serializer):

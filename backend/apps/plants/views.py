@@ -8,6 +8,7 @@ from .serializers import (
     PlantCreateSerializer,
     PlantUpdateSerializer,
     StageUpdateSerializer,
+    FlagSerializer,
     ObservationSerializer,
 )
 
@@ -76,6 +77,45 @@ class PlantViewSet(viewsets.ModelViewSet):
         if observation:
             plant.notes = observation
         plant.save()
+
+        return Response(PlantSerializer(plant).data)
+
+    @action(detail=True, methods=['patch'], url_path='flag')
+    def flag(self, request, pk=None):
+        """
+        PATCH /api/plants/:id/flag/ — agents only.
+        Sets or clears a manual status override on the plant.
+          override='at_risk'  — agent flags disease, pest damage, etc.
+          override='healthy'  — agent confirms healthy despite overdue timeline.
+          override=null       — clears override, reverts to automatic computation.
+        An optional 'reason' is appended to the audit log.
+        """
+        plant = self.get_object()
+
+        denied = self._check_agent_only(request, plant)
+        if denied:
+            return denied
+
+        serializer = FlagSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        override = serializer.validated_data['override']
+        reason = serializer.validated_data.get('reason', '')
+
+        plant.status_override = override  # None clears it
+        plant.save()  # triggers PlantStatusService.compute_status
+
+        # Log the flag action as an audit entry
+        label = {
+            'at_risk': 'Manually flagged as At Risk',
+            'healthy': 'Manually marked as Healthy',
+            None: 'Status override cleared — reverted to automatic',
+        }.get(override, 'Status flag updated')
+        observation_text = f"{label}. {reason}".strip(' .') if reason else label
+        PlantUpdate.objects.create(
+            plant=plant,
+            agent=request.user,
+            observation=observation_text,
+        )
 
         return Response(PlantSerializer(plant).data)
 

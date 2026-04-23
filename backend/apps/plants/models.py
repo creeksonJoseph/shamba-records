@@ -15,6 +15,11 @@ STATUS_CHOICES = [
     ('completed', 'Completed'),
 ]
 
+STATUS_OVERRIDE_CHOICES = [
+    ('at_risk', 'At Risk'),
+    ('healthy', 'Healthy'),
+]
+
 
 class Plant(models.Model):
     """
@@ -37,6 +42,13 @@ class Plant(models.Model):
     planting_date = models.DateField()
     expected_days = models.PositiveIntegerField(help_text='Expected days from planting to harvest')
     stage = models.CharField(max_length=20, choices=STAGE_CHOICES, default='planted')
+    status_override = models.CharField(
+        max_length=20,
+        choices=STATUS_OVERRIDE_CHOICES,
+        null=True,
+        blank=True,
+        help_text='Agent-set override: forces at_risk or healthy regardless of timeline.',
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
