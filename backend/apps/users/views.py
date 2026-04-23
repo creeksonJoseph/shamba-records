@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import CustomUser
-from .serializers import UserSerializer, RegisterSerializer, LoginSerializer
+from .serializers import UserSerializer, UserDetailSerializer, RegisterSerializer, LoginSerializer
 from .permissions import IsAdmin
 
 
@@ -61,6 +61,5 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ['create', 'partial_update', 'update']:
-            # Use RegisterSerializer so passwords can be set securely
             return RegisterSerializer
-        return UserSerializer
+        return UserDetailSerializer

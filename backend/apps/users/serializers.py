@@ -4,12 +4,20 @@ from .models import CustomUser
 
 
 class UserSerializer(serializers.ModelSerializer):
-    assigned_fields = serializers.SerializerMethodField()
-
+    """Lean serializer — safe to nest inside Field/Plant serializers without N+1."""
     class Meta:
         model = CustomUser
-        fields = ['id', 'name', 'email', 'role', 'created_at', 'assigned_fields']
-        read_only_fields = ['id', 'created_at', 'assigned_fields']
+        fields = ['id', 'name', 'email', 'role', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class UserDetailSerializer(UserSerializer):
+    """Extended serializer for the /users/ endpoint — includes assigned_fields."""
+    assigned_fields = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ['assigned_fields']
+        read_only_fields = UserSerializer.Meta.read_only_fields + ['assigned_fields']
 
     def get_assigned_fields(self, obj):
         if obj.role != 'agent':

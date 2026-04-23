@@ -21,12 +21,24 @@ class PlantViewSet(viewsets.ModelViewSet):
     Stage updates & observations: agents only, via /stage/ and /updates/ actions.
     """
 
-    def get_queryset(self):
+    def _base_qs(self):
+        """Scoped queryset without heavyweight prefetches (used for list)."""
         user = self.request.user
-        qs = Plant.objects.select_related('field', 'created_by').prefetch_related('updates__agent')
+        qs = Plant.objects.select_related('field', 'created_by')
         if user.role == 'admin':
             return qs.all()
         return qs.filter(field__assigned_agent=user)
+
+    def get_queryset(self):
+        """
+        Detail / write actions need the full updates history prefetched.
+        List view skips it — loading every update for every plant on a list
+        is expensive and the data isn't used there.
+        """
+        qs = self._base_qs()
+        if self.action in ('retrieve', 'update_stage', 'flag', 'updates'):
+            return qs.prefetch_related('updates__agent')
+        return qs
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -125,7 +137,7 @@ class PlantViewSet(viewsets.ModelViewSet):
         plant = self.get_object()
 
         if request.method == 'GET':
-            updates = plant.updates.select_related('agent').all()
+            updates = plant.updates.select_related('agent', 'plant__field').all()
             return Response(PlantUpdateSerializer(updates, many=True).data)
 
         # POST — agents only
