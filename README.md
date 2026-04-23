@@ -88,16 +88,21 @@ Rather than locking the browser's main thread and stalling out when the backend 
 
 ## 3. Data & Risk Architecture
 
-### Separation of Fields and Plants
-- A **Field** is a permanent physical location (e.g., "North Block").
-- A **Plant** represents a specific, ephemeral crop lifecycle occurring on a field (e.g., "Maize").
-This normalized schema guarantees better long-term analytics without overwriting historical Field records every season.
+![Entity Relationship Diagram](assets/Agent-Admin%20Plant-2026-04-23-045612.png)
+
+Our database architecture prioritizes historical integrity and clear accountability:
+
+- **Normalization (Fields vs. Plants):** We separated physical locations (**Fields**) from their temporal crop cycles (**Plants**). This allows a single field to host multiple different crops over many seasons, enabling rich historical performance analytics.
+- **Audit Trail:** The `PlantUpdates` table acts as an append-only log. Every stage change or observation is recorded with a timestamp and the specific agent responsible, rather than just overwriting the main record.
+- **Flexible Risk Logic:** While the system uses an automated algorithm to detect overdue crops, the `status_override` field allows users to manually mark plants as "Healthy" or "At Risk" to account for real-world environmental factors. 
+- **Role-Based Constraints:** Fields are precisely linked to an `assigned_agent` while the system tracks the Admin who created the configuration, ensuring a clear chain of command.
 
 ### Automated Risk Algorithm
-The core business logic tracking plant safety runs automatically upon database saves:
-1. **Completed:** If a crop's current stage is manually updated to `harvested`, the system permanently marks the status as `completed`.
-2. **At Risk:** The system takes the `planting_date` and adds `expected_days` to determine an expected harvest date. If the crop is past its harvest date but has still not been marked as "harvested" or "ready", the plant is flagged as `at_risk`. Admin users can also manually mark a plant as at risk or healthy if the risk has been mitigated.
-3. **Active:** All other plants growing safely within their expected timeframe remain `active`.
+The backend `PlantStatusService` automatically computes health status based on the following precedence:
+1. **Manual Override:** If a user has set a status override (Healthy/At Risk), that choice is respected immediately.
+2. **Completed:** If a crop's current stage is `harvested`, the status is finalized as `completed`.
+3. **Timeline Baseline:** The system calculates an expected harvest date (`planting_date` + `expected_days`). If the current date is past this milestone and the crop isn't ready/harvested, it is flagged as `at_risk`.
+4. **Active:** All other crops within their expected growth window are marked as `active`.
 
 ---
 
