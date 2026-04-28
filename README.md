@@ -1,6 +1,6 @@
 # Smart Season Field Monitoring System
 
-A full-stack, production-ready web application designed to track crop progress across multiple fields during a growing season. 
+A full-stack, production-ready web application designed to track crop progress across multiple fields during a growing season. Admins can add agents, add fields to agents and then the agents can add plants to the field and everything trackead and visible to the admins
 
 ### Live Deployments
 - **Frontend App:** [https://smartseas0n.vercel.app/](https://smartseas0n.vercel.app/)
